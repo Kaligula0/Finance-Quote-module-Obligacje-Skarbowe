@@ -24,3 +24,6 @@ $symbol = "EDO1131-04";
 # Błędy, uwagi, sugestie, pomoc, współpraca
 
 Zgłaszajcie w Issues. Pozdro
+
+# License
+GPL 2.0
