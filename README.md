@@ -1,6 +1,6 @@
 # Finance-Quote-module-Obligacje-Skarbowe
 
-Moduł do [Finance::Quote](https://github.com/finance-quote/finance-quote) (i [GnuCash](https://www.gnucash.org/)) obliczający wartość posiadanych przez użytkownika [polskich obligacji skarbowych](https://www.obligacjeskarbowe.pl/). Napisany w Perlu, oczywiście, bo Finance::Quote.
+Moduł do [Finance::Quote](https://github.com/finance-quote/finance-quote) (i [GnuCash](https://www.gnucash.org)) obliczający wartość posiadanych przez użytkownika [polskich obligacji skarbowych](https://www.obligacjeskarbowe.pl). Napisany w Perlu, oczywiście, bo Finance::Quote.
 
 # Stan rozwoju
 
@@ -16,7 +16,7 @@ Pobierz plik `ObligacjeSP.pm` i wklej go do folderu Finance::Quote (prawdopodobn
 
 Na tym etapie rozwoju modułu użytkownik musi swoje obligacje wpisać w zmienną `my %rates` (oprocentowanie w pierwszym roku i oprocentowanie ponad inflację w kolejnych). Nie wiem jak będzie kiedyś i co można tu poprawić.
 
-W GnuCashu trzeba obligacjom nadać odpowiednie symbole (którymi GnuCash odpytuje moduły F::Q). Symbole powinny mieć formę `[SymbolOryginalny]-DD`, gdzie `SymbolOryginalny` to np. `EDO0831` (jak na stronie internetowej obligacjeskarbowe.pl), a `DD` to dzień zakupu dwucyfrowo (odsetki są naliczane codziennie, więc dokładna data zakupu jest ważna dla modułu). Użycie w GnuCashu nie wymaga więcej czynności, GnuCash sam skonstruuje poprawne zapytanie.
+W GnuCashu trzeba obligacjom nadać odpowiednie symbole (którymi GnuCash odpytuje moduły F::Q). Symbole powinny mieć formę `[SymbolOryginalny]-DD`, gdzie `SymbolOryginalny` to np. `EDO0831` (jak na stronie internetowej [obligacjeskarbowe.pl](https://www.obligacjeskarbowe.pl/)), a `DD` to dzień zakupu dwucyfrowo (odsetki są naliczane codziennie, więc dokładna data zakupu jest ważna dla modułu). Użycie w GnuCashu nie wymaga więcej czynności, GnuCash sam skonstruuje poprawne zapytanie.
 
 Użycie ręczne:
 
