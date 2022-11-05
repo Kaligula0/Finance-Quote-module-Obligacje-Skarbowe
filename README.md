@@ -4,7 +4,7 @@ Moduł do [Finance::Quote](https://github.com/finance-quote/finance-quote) (i [G
 
 # Stan rozwoju
 
-Obecnie jest to pierwsza wersja, która sama pobiera dane o inflacji (ze Stooq.pl) i w ogóle poprawnie oblicza wartość obligacji.
+Wersja ALPHA - pierwsza, która sama pobiera dane o inflacji (ze Stooq.pl) i w ogóle w końcu poprawnie oblicza wartość obligacji. Kod zawiera jeszcze zmienne służące do debugowania i jest nieposprzątany. 
 
 Na razie obsługuje obligacje indeksowane inflacją: EDO i COI, mimo że symbole innych obligacji pojawiają się też w kodzie (być może da się ten moduł też zastosować już do ROD i ROS, nie sprawdzałem). Pozostałe może w przyszłości.
 
