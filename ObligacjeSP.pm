@@ -108,7 +108,7 @@ sub obligacje_sp {
 	# pobierz ze Stooq, odfiltruj i dopchnij do %rates
 
 	my $ua = $quoter->user_agent;
-    my $url = 'https://stooq.pl/q/d/l/?s=cpiypl.m&d1='.$CPIYearStart.$CPIMonthStart.'01&d2='.$nowYear.$nowMonth.'31&i=m&o=0101000&c=1';
+    my $url = 'https://stooq.pl/q/d/l/?s=cpiypl.m&d1='.$CPIYearStart.sprintf("%02d",$CPIMonthStart).'01&d2='.$nowYear.sprintf("%02d",$nowMonth).'31&i=m&o=0101000&c=1';
 	$debug = "$debug\nurl: $url";
     my $reply = $ua->request(GET $url);
     unless ($reply->is_success) {
