@@ -5,7 +5,7 @@
 #    Copyright (C) 2000, Brent Neal <brentn@users.sourceforge.net>
 #    Copyright (C) 2000, Keith Refson <Keith.Refson@earth.ox.ac.uk>
 #    Copyright (C) 2003, Tomas Carlsson <tc@tompa.nu>
-#    Copytight (C) 2022, Kaligula <kaligula.dev@gmail.com>
+#    Copytight (C) 2022-2024 Kaligula <kaligula.dev@gmail.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -53,16 +53,6 @@ sub obligacje_sp {
 
   return unless @symbols;
   my %stocks;
-  my %rates = (
-	# type    =>   1stYr%  nxtYrs%+CPI
-	'EDO1129' => [0.0270, 0.0150],
-	'EDO1130' => [0.0170, 0.0100],
-	'EDO1131' => [0.0170, 0.0100],
-	'EDO0232' => [0.0220, 0.0125],
-	'EDO0532' => [0.0370, 0.0125],
-	'COI0826' => [0.0650, 0.0100],
-	'COI0926' => [0.0650, 0.0100]
-  );
   my %duration = ( #in years
 	'OTS' => 0.25,
 	'ROR' => 1,
@@ -73,6 +63,7 @@ sub obligacje_sp {
 	'ROS' => 6,
 	'ROD' => 12
   );
+  # TODO: Wywal błąd jeśli nie ma takiego symbolu
 
 	my $debug = '';
 
@@ -84,7 +75,7 @@ sub obligacje_sp {
   my $CPIYearStart = 9999;
   my $CPIMonthStart = 12;
   foreach my $symbol (@symbols) {
-	my ($type, $seriesMonth, $seriesYearTo, $seriesDay) = ($symbol =~ /([A-Z]{3})(\d{2})(\d{2})-(\d{2})/);
+	my ($type, $seriesMonth, $seriesYearTo, $seriesDay, $rateFirstYear, $rateNextYears) = ($symbol =~ /([A-Z]{3})(\d{2})(\d{2})-d(\d{2})-p(\d+\.\d+)(?:-i(\d+\.\d+))/);
 	$seriesYearTo += 2000;
 	my $seriesYearFrom = $seriesYearTo - $duration{$type};
 	if ($type eq "COI" || $type eq "EDO" || $type eq "ROS" || $type eq "ROD" ) { #indeksowane inflacją
@@ -105,7 +96,7 @@ sub obligacje_sp {
   #HTTP request
   unless ($CPIYearStart == 9999) {
 
-	# pobierz ze Stooq, odfiltruj i dopchnij do %rates
+	# pobierz ze Stooq, odfiltruj i zapisz
 
 	my $ua = $quoter->user_agent;
     my $url = 'https://stooq.pl/q/d/l/?s=cpiypl.m&d1='.$CPIYearStart.sprintf("%02d",$CPIMonthStart).'01&d2='.$nowYear.sprintf("%02d",$nowMonth).'31&i=m&o=0101000&c=1';
@@ -138,7 +129,10 @@ sub obligacje_sp {
   }
 
   foreach my $symbol (@symbols) {
-	my ($type, $seriesMonth, $seriesYearTo, $seriesDay) = ($symbol =~ /([A-Z]{3})(\d{2})(\d{2})-(\d{2})/);
+	$debug = "$debug\n$symbol";
+	my ($type, $seriesMonth, $seriesYearTo, $seriesDay, $rateFirstYear, $rateNextYears) = ($symbol =~ /([A-Z]{3})(\d{2})(\d{2})-d(\d{2})-p(\d+\.\d+)(?:-i(\d+\.\d+))/);
+	$rateFirstYear = $rateFirstYear / 100;
+	$rateNextYears = $rateNextYears / 100;
 	my $series = $type.$seriesMonth.$seriesYearTo; #e.g. 'EDO1131'
 	$seriesYearTo += 2000; #e.g. '2031'
 	my $seriesYearFrom = $seriesYearTo - $duration{$type};
@@ -158,13 +152,13 @@ sub obligacje_sp {
 	my $daysPassed = $dt2->delta_days($dt1)->delta_days(); #days passed until today
 	my $daysInYear = $dt3->delta_days($dt1)->delta_days(); #days in the first year
 
-	$debug = "$debug\nrates: ".join('/',@{$rates{$series}});
+	$debug = "$debug\nrates: $rateFirstYear / infl+$rateNextYears";
 	$debug = "$debug\nyearsPassed: $yearsPassed";
 
 	my $ileTeraz = 1;
 	if ($yearsPassed == 0) {
 		
-		$ileTeraz = 1 + $rates{$series}[0]*($daysPassed/$daysInYear);
+		$ileTeraz = 1 + $rateFirstYear*($daysPassed/$daysInYear);
 		
 	} else {
 		
@@ -180,11 +174,11 @@ sub obligacje_sp {
 		# w TOS/EDO/ROS/ROD odsetki co rok są kapitalizowane, a w in. nie! (są wypłacane)
 		if ($type eq "TOS" || $type eq "EDO" || $type eq "ROS" || $type eq "ROD" ) {
 			
-			$ileTeraz = 1 + $rates{$series}[0]; #after 1 year
+			$ileTeraz = 1 + $rateFirstYear; #after 1 year
 			$debug = "$debug\nilepo1: $ileTeraz";
 			
 			for (2..$yearsPassed) { #after next years
-				$ileTeraz = $ileTeraz * (1 + $CPIHash{($seriesYearFrom+$_-1+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM))}+$rates{$series}[1]);
+				$ileTeraz = $ileTeraz * (1 + $CPIHash{($seriesYearFrom+$_-1+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM))}+$rateNextYears);
 				$debug = "$debug\nCPIHash: ".($seriesYearFrom+$_-1+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM));
 				$debug = "$debug\nCPI: ".$CPIHash{($seriesYearFrom+$_-1+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM))};
 				$debug = "$debug\nilepo$_: $ileTeraz";
@@ -192,7 +186,7 @@ sub obligacje_sp {
 		}
 
 		# odsetki naliczone w bieżącym roku odsetkowym
-		$ileTeraz = $ileTeraz * (1 + ($CPIHash{($seriesYearFrom+$yearsPassed+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM))}+$rates{$series}[1])*($daysPassed/$daysInYear) );
+		$ileTeraz = $ileTeraz * (1 + ($CPIHash{($seriesYearFrom+$yearsPassed+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM))}+$rateNextYears)*($daysPassed/$daysInYear) );
 		$debug = "$debug\nCPIHash: ".($seriesYearFrom+$yearsPassed+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM));
 		$debug = "$debug\nCPI: ".$CPIHash{($seriesYearFrom+$yearsPassed+$CPIJanFebCorrectionY).(sprintf("%02d",$seriesMonth-2+$CPIJanFebCorrectionM))};
 		$debug = "$debug\nileTeraz: $ileTeraz";
