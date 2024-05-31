@@ -234,7 +234,7 @@ Finance::Quote::ObligacjeSP - Obtain prices of gov bonds
 
     $q = Finance::Quote->new;
 
-    %stockinfo = $q->fetch("obligacje_sp","EDO0831-04"); # the letter ticker
+    %stockinfo = $q->fetch("obligacje_sp","COI0127-d29-p7.00-i1.00"); # the letter ticker
 
 =head1 DESCRIPTION
 
