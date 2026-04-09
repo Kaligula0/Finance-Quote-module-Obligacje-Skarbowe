@@ -100,6 +100,11 @@ sub obligacje_sp {
 
 	my $ua = $quoter->user_agent;
     my $url = 'https://stooq.pl/q/d/l/?s=cpiypl.m&d1='.$CPIYearStart.sprintf("%02d",$CPIMonthStart).'01&d2='.$nowYear.sprintf("%02d",$nowMonth).'31&i=m&o=0101000&c=1';
+	$url = $url . '&apikey=BSAqPWtmlDoZcxLgMf7X4zb0eCQYENT1'
+	# Możliwe, że klucz przestanie działać, wtedy pobierz swój:
+	# 1. Otwórz stronę https://stooq.pl/q/d/?s=cpiypl.m&get_apikey
+	# 2. Wpisz kod captcha, zatwierdź, odśwież.
+	# 3. Skopiuj link pobrania pliku CSV znajdujący się w dole strony - będzie zawierał zmienną <apikey>.
 	$debug = "$debug\nurl: $url";
     my $reply = $ua->request(GET $url);
     unless ($reply->is_success) {
